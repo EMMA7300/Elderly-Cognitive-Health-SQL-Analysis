@@ -1,0 +1,117 @@
+
+===============================================================================
+PROJECT: Elderly Cognitive Health Assessment - SQL Analysis
+DATABASE: elderly_health.db
+TABLE: elderly_patients (1,200 records)
+DATE: December 2, 2025
+===============================================================================
+
+QUERY 1: DEMOGRAPHIC OVERVIEW
+Purpose: Establish baseline population characteristics
+-------------------------------------------------------------------------------
+SELECT 
+    COUNT(*) as Total_Patients,
+    ROUND(AVG(Age), 1) as Average_Age,
+    MIN(Age) as Youngest_Patient,
+    MAX(Age) as Oldest_Patient,
+    SUM(CASE WHEN Gender = 'Male' THEN 1 ELSE 0 END) as Male_Count,
+    SUM(CASE WHEN Gender = 'Female' THEN 1 ELSE 0 END) as Female_Count,
+    SUM(CASE WHEN Region = 'Urban' THEN 1 ELSE 0 END) as Urban_Count,
+    SUM(CASE WHEN Region = 'Rural' THEN 1 ELSE 0 END) as Rural_Count
+FROM elderly_patients;
+
+Key Finding: 1,200 patients, average age 75, balanced gender and geography
+===============================================================================
+
+QUERY 2: AGE GROUP ANALYSIS
+Purpose: Compare health metrics across age brackets
+-------------------------------------------------------------------------------
+SELECT 
+    CASE 
+        WHEN Age BETWEEN 60 AND 69 THEN '60-69 years'
+        WHEN Age BETWEEN 70 AND 79 THEN '70-79 years'
+        WHEN Age BETWEEN 80 AND 89 THEN '80-89 years'
+    END as Age_Group,
+    COUNT(*) as Patient_Count,
+    ROUND(AVG(MMSE_Score), 2) as Avg_Cognitive_Score,
+    ROUND(AVG(GDS_Score), 2) as Avg_Depression_Score,
+    ROUND(AVG(Chronic_Diseases), 2) as Avg_Chronic_Conditions,
+    ROUND(AVG(Physical_Activity_Score), 2) as Avg_Physical_Activity,
+    ROUND(AVG(BMI), 2) as Avg_BMI
+FROM elderly_patients
+GROUP BY Age_Group
+ORDER BY Age_Group;
+
+Key Finding: Cognitive scores stable across ages, 70-79 group most depressed
+===============================================================================
+
+QUERY 3: EDUCATION IMPACT ANALYSIS
+Purpose: Examine education as protective factor for cognitive health
+-------------------------------------------------------------------------------
+SELECT 
+    CASE 
+        WHEN Education_Level = 0 THEN 'No Formal Education'
+        WHEN Education_Level = 1 THEN 'Primary Education'
+        WHEN Education_Level = 2 THEN 'Secondary Education'
+        WHEN Education_Level = 3 THEN 'Higher Education'
+    END as Education_Category,
+    COUNT(*) as Patient_Count,
+    ROUND(AVG(MMSE_Score), 2) as Avg_Cognitive_Score,
+    ROUND(MIN(MMSE_Score), 2) as Min_Cognitive_Score,
+    ROUND(MAX(MMSE_Score), 2) as Max_Cognitive_Score,
+    ROUND(AVG(GDS_Score), 2) as Avg_Depression_Score,
+    ROUND(AVG(Physical_Activity_Score), 2) as Avg_Physical_Activity
+FROM elderly_patients
+GROUP BY Education_Level
+ORDER BY Education_Level;
+
+Key Finding: Higher education shows +0.79 MMSE points, protective effect
+===============================================================================
+
+QUERY 4: CHRONIC DISEASE BURDEN ANALYSIS
+Purpose: Assess impact of multimorbidity on health outcomes
+-------------------------------------------------------------------------------
+SELECT 
+    CASE 
+        WHEN Chronic_Diseases = 0 THEN '0 conditions (Healthy)'
+        WHEN Chronic_Diseases BETWEEN 1 AND 2 THEN '1-2 conditions (Low burden)'
+        WHEN Chronic_Diseases BETWEEN 3 AND 4 THEN '3-4 conditions (Moderate burden)'
+        WHEN Chronic_Diseases >= 5 THEN '5+ conditions (High burden)'
+    END as Disease_Burden_Category,
+    COUNT(*) as Patient_Count,
+    ROUND(AVG(MMSE_Score), 2) as Avg_Cognitive_Score,
+    ROUND(AVG(GDS_Score), 2) as Avg_Depression_Score,
+    ROUND(AVG(Sleep_Quality_Score), 2) as Avg_Sleep_Quality,
+    ROUND(AVG(Physical_Activity_Score), 2) as Avg_Physical_Activity,
+    ROUND(AVG(Glucose_Level), 2) as Avg_Glucose_Level,
+    ROUND(AVG(BMI), 2) as Avg_BMI
+FROM elderly_patients
+GROUP BY Disease_Burden_Category;
+
+Key Finding: 1-2 conditions group has best cognition (21.90)
+===============================================================================
+
+QUERY 5: LIFESTYLE FACTORS ANALYSIS
+Purpose: Identify modifiable lifestyle risk factors
+-------------------------------------------------------------------------------
+SELECT 
+    CASE 
+        WHEN Physical_Activity_Score BETWEEN 0 AND 3 THEN 'Low Activity (0-3)'
+        WHEN Physical_Activity_Score BETWEEN 4 AND 6 THEN 'Moderate Activity (4-6)'
+        WHEN Physical_Activity_Score BETWEEN 7 AND 10 THEN 'High Activity (7-10)'
+    END as Activity_Level,
+    CASE 
+        WHEN Sleep_Quality_Score BETWEEN 1 AND 2 THEN 'Poor Sleep (1-2)'
+        WHEN Sleep_Quality_Score = 3 THEN 'Fair Sleep (3)'
+        WHEN Sleep_Quality_Score BETWEEN 4 AND 5 THEN 'Good Sleep (4-5)'
+    END as Sleep_Category,
+    COUNT(*) as Patient_Count,
+    ROUND(AVG(MMSE_Score), 2) as Avg_Cognitive_Score,
+    ROUND(AVG(GDS_Score), 2) as Avg_Depression_Score,
+    ROUND(AVG(Age), 1) as Avg_Age
+FROM elderly_patients
+GROUP BY Activity_Level, Sleep_Category
+ORDER BY Activity_Level, Sleep_Category;
+
+Key Finding: 42% have poor sleep regardless of activity level
+===============================================================================
